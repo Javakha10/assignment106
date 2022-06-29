@@ -1,9 +1,14 @@
 import {LitElement, html, css} from 'lit';
-import {check, saveToStorage, loadFromStorage, clearStorage, deleteFromStorage} from './api/rand';
+import {
+  check,
+  saveToStorage,
+  loadFromStorage,
+  clearStorage,
+  deleteFromStorage,
+} from './api/rand';
 
 // saveToStorage promise
 // deleteFromStorage promise
-
 
 //loadFromStorage --
 // clearStorage --
@@ -21,7 +26,7 @@ export class MyElement extends LitElement {
         gap: 52px;
         grid-template-columns: 1fr 3fr 1fr;
       }
-      
+
       .container > div {
         display: flex;
         flex-direction: column;
@@ -30,18 +35,18 @@ export class MyElement extends LitElement {
         border-radius: 12px;
         padding: 12px;
       }
-      
+
       .left {
         display: grid;
         grid-gap: 24px;
       }
-      
+
       .left > span {
         display: flex;
         justify-content: space-between;
         gap: 12px;
       }
-      
+
       .tweet {
         display: flex;
         flex-direction: column;
@@ -49,12 +54,12 @@ export class MyElement extends LitElement {
         margin-bottom: 12px;
         border-bottom: 1px solid grey;
       }
-      
+
       .title {
         font-size: 14px;
         font-weight: bold;
       }
-      
+
       .post {
         font-size: 22px;
         color: gray;
@@ -64,30 +69,38 @@ export class MyElement extends LitElement {
 
   render() {
     return html`
-      <div class='container'>
-        <div class='left'>
-          <span>          Name:
-          <input @input="${this.nameInput}">
+      <div class="container">
+        <div class="left">
+          <span>
+            Name:
+            <input @input="${this.nameInput}" />
           </span>
           <span>
-          Post:
-          <textarea @input='${this.postInput}'></textarea>
+            Post:
+            <textarea @input="${this.postInput}"></textarea>
           </span>
-          <span >
-          <button @click='${this.postTweet}'>Tweet</button>
+          <span>
+            <button @click="${this.postTweet}">Tweet</button>
           </span>
         </div>
-        <div class='middle'>
-          ${this.tweets.map((item, index)=> html`
-            <div class='tweet'>
-              <div class='title'>${item.name}</div>
-              <div class='post'>${item.post}</div>
-              <span style='color: red; cursor: pointer' @click='${()=> this.DeleteTweet(index)}'>Delete</span>
-            </div>
-          `)}
+        <div class="middle">
+          ${this.tweets.map(
+            (item, index) => html`
+              <div class="tweet">
+                <div class="title">${item.name}</div>
+                <div class="post">${item.post}</div>
+                <span
+                  style="color: red; cursor: pointer"
+                  @click="${() => this.DeleteTweet(index)}"
+                  >Delete</span
+                >
+              </div>
+            `
+          )}
         </div>
-        <div class='right'>
-          Posted <span style='font-weight: bold'>${this.postCount || 0}</span> tweet
+        <div class="right">
+          Posted
+          <span style="font-weight: bold">${this.postCount || 0}</span> tweet
         </div>
       </div>
     `;
@@ -100,35 +113,46 @@ export class MyElement extends LitElement {
       },
       postCount: {
         type: Number,
-      }
+      },
     };
   }
 
   constructor() {
     super();
-    this.tweets = [{
-      name: 'test',
-      post: 'test Tweet'
-    },]
+    this.tweets = [{}];
+    this.tweets = loadFromStorage();
+    this.postCount = this.tweets.length;
+    this.name = '';
+    this.post = '';
   }
 
-  nameInput(event){
-    const name = event.target.value
-    console.log(name)
-  }
-  postInput(event){
-    const post = event.target.value
-    console.log(post)
+  nameInput(event) {
+    const name = event.target.value;
+    console.log(name);
+    this.name = name;
   }
 
-  postTweet(){
-
+  postInput(event) {
+    const post = event.target.value;
+    console.log(post);
+    this.post = post;
   }
 
-  DeleteTweet(index){
-
+  postTweet() {
+    const oneTweet = {
+      name: this.name,
+      post: this.post,
+    };
+    this.postCount++;
+    saveToStorage(oneTweet).then((this.tweets = [...this.tweets, oneTweet]));
   }
 
+  DeleteTweet(index) {
+    this.tweets.splice(index, 1);
+    this.tweets = [...this.tweets];
+    this.postCount--;
+    deleteFromStorage(index);
+  }
 }
 
 window.customElements.define('my-element', MyElement);
